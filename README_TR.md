@@ -1,6 +1,6 @@
 # Job Tracker & Automation
 
-[English](README.md) | [Türkçe](README_TR.md)
+[English](README.md) | [Türkçe](README_TR.md) | [Deutsch](README_DE.md)
 
 İlan kaydeden, beceri eşleşmesini açıklayan ve ilanı saved, applied, interview veya rejected durumları arasında ilerleten üretime yakın takip API'si.
 
