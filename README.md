@@ -1,6 +1,6 @@
 # Job Tracker & Automation
 
-[English](README.md) | [Türkçe](README_TR.md)
+[English](README.md) | [Türkçe](README_TR.md) | [Deutsch](README_DE.md)
 
 A production-shaped job tracking API. Save a listing, explain which skills match a profile, and move it through saved, applied, interview or rejected states.
 
