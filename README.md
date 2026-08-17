@@ -14,6 +14,12 @@ Python, FastAPI, Pydantic, Playwright-ready ingestion boundary, SQLite/PostgreSQ
 - PATCH /api/v1/jobs/{id}/status?status=applied updates its workflow state.
 - GET /api/v1/jobs lists the dashboard feed.
 
+Salary screening is explicit: salary_text is parsed into currency and a numeric range. Listings marked volunteer, unpaid, equity-only, token-only or project-token are returned with is_paid=false so they can be excluded before applying.
+
+Example request:
+
+    {"title":"Backend Engineer","company":"Acme","url":"https://example.com/1","description":"Python FastAPI","salary_text":"$60,000-$70,000 USD"}
+
     pip install -e ".[dev]"
     uvicorn app.main:app --reload
     pytest -q
@@ -21,4 +27,3 @@ Python, FastAPI, Pydantic, Playwright-ready ingestion boundary, SQLite/PostgreSQ
 Docker: docker compose up --build. Interactive docs: /docs.
 
 Only genuine salary fields should be accepted by a future collector; token-only, volunteer and unpaid listings must be filtered out.
-

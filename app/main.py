@@ -1,3 +1,4 @@
+import re
 from datetime import UTC, datetime
 from enum import StrEnum
 from uuid import uuid4
@@ -19,6 +20,7 @@ class JobCreate(BaseModel):
     url: HttpUrl
     description: str = Field(min_length=20, max_length=30_000)
     source: str = Field(default="manual", max_length=50)
+    salary_text: str = Field(default="", max_length=500)
 
 
 class Job(JobCreate):
@@ -26,6 +28,10 @@ class Job(JobCreate):
     status: Status = Status.SAVED
     matched_skills: list[str]
     created_at: datetime
+    is_paid: bool
+    salary_currency: str | None
+    salary_min: float | None
+    salary_max: float | None
 
 
 SKILLS = (
@@ -47,6 +53,30 @@ SKILLS = (
     "playwright",
 )
 jobs: dict[str, Job] = {}
+
+
+def parse_salary(text: str) -> tuple[bool, str | None, float | None, float | None]:
+    lowered = text.lower()
+    unpaid_terms = ("volunteer", "unpaid", "equity only", "token only", "project token")
+    if any(term in lowered for term in unpaid_terms):
+        return False, None, None, None
+    currency = next(
+        (
+            code
+            for code, marker in (
+                ("USD", "$"),
+                ("EUR", "€"),
+                ("GBP", "£"),
+                ("TRY", "₺"),
+            )
+            if marker in text or code.lower() in lowered
+        ),
+        None,
+    )
+    values = [float(value.replace(",", "")) for value in re.findall(r"\d+(?:[,.]\d+)?", text)]
+    if not values or not currency:
+        return False, currency, None, None
+    return True, currency, min(values), max(values)
 
 
 def match_skills(description: str, profile: set[str]) -> list[str]:
@@ -75,10 +105,15 @@ def create_app() -> FastAPI:
             "rag",
             "playwright",
         }
+        paid, currency, salary_min, salary_max = parse_salary(payload.salary_text)
         job = Job(
             id=str(uuid4()),
             matched_skills=match_skills(payload.description, profile),
             created_at=datetime.now(UTC),
+            is_paid=paid,
+            salary_currency=currency,
+            salary_min=salary_min,
+            salary_max=salary_max,
             **payload.model_dump(),
         )
         jobs[job.id] = job
